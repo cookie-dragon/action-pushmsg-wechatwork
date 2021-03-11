@@ -38,17 +38,23 @@ inputs:
     description: '文本卡片消息-点击后跳转的链接'
     required: false
     default: 'https://github.com/cookie-dragon'
+outputs:
+  RTN_message_send:
+    description: "Return Message from message_send"
+    value: ${{ steps.message_send.outputs.RTN_message_send }}
 runs:
   using: "composite"
   steps: 
-    - run: |
+    - id: message_send
+      run: |
         RTN_gettoken=`curl --location --request GET "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=${{ inputs.corpid }}&corpsecret=${{ inputs.corpsecret }}"`
         errcode=`echo ${RTN_gettoken} | jq -r '.errcode'`
         if [[ ${errcode} == 0 ]]; then
           access_token=`echo ${RTN_gettoken} | jq -r '.access_token'`
 
+          RTN_message_send=''
           if [[ ${{ inputs.msgtype }} == 'text' ]]; then
-            curl --location --request POST "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${access_token}" \
+            RTN_message_send=`curl --location --request POST "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${access_token}" \
             --header 'Content-Type: application/json' \
             --data-raw '{
               "touser" : "'"${{ inputs.touser }}"'",
@@ -57,9 +63,9 @@ runs:
               "text" : {
                 "content" : "'"${{ inputs.text_content }}"'"
               }
-            }'
+            }'`
           elif [[ ${{ inputs.msgtype }} == 'textcard' ]]; then
-            curl --location --request POST "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${access_token}" \
+            RTN_message_send=`curl --location --request POST "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${access_token}" \
             --header 'Content-Type: application/json' \
             --data-raw '{
               "touser" : "'"${{ inputs.touser }}"'",
@@ -70,8 +76,9 @@ runs:
                 "description" : "'"${{ inputs.textcard_description }}"'",
                 "url" : "'"${{ inputs.textcard_url }}"'"
               }
-            }'
+            }'`
           fi
-          
+
+          echo "::set-output name=RTN_message_send::${RTN_message_send}"
         fi
       shell: bash
