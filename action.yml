@@ -38,48 +38,40 @@ inputs:
     description: '文本卡片消息-点击后跳转的链接'
     required: false
     default: 'https://github.com/cookie-dragon'
-
 runs:
   using: "composite"
   steps: 
-
-    - name: Get ACCESS_TOKEN
-      id: get_access_token
-      run: |
+    - run: |
         RTN_gettoken=`curl --location --request GET "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=${{ inputs.corpid }}&corpsecret=${{ inputs.corpsecret }}"`
         errcode=`echo ${RTN_gettoken} | jq -r '.errcode'`
         if [[ ${errcode} == 0 ]]; then
           access_token=`echo ${RTN_gettoken} | jq -r '.access_token'`
-          echo "::set-output name=access_token::${access_token}"
-        fi
-      shell: bash
 
-    - name: Push Msg
-      if: contains(steps.get_access_token.outputs, 'access_token')
-      run: |
-        if [[ ${{ inputs.msgtype }} == 'text' ]]; then
-          curl --location --request POST "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${{ steps.get_access_token.outputs.access_token }}" \
-          --header 'Content-Type: application/json' \
-          --data-raw '{
-            "touser" : "'"${{ inputs.touser }}"'",
-            "msgtype" : "'"${{ inputs.msgtype }}"'",
-            "agentid" : '"${{ inputs.agentid }}"',
-            "text" : {
-              "content" : "'"${{ inputs.text_content }}"'"
-            }
-          }'
-        elif [[ ${{ inputs.msgtype }} == 'textcard' ]]; then
-          curl --location --request POST "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${{ steps.get_access_token.outputs.access_token }}" \
-          --header 'Content-Type: application/json' \
-          --data-raw '{
-            "touser" : "'"${{ inputs.touser }}"'",
-            "msgtype" : "'"${{ inputs.msgtype }}"'",
-            "agentid" : '"${{ inputs.agentid }}"',
-            "textcard" : {
-              "title" : "'"${{ inputs.textcard_title }}"'",
-              "description" : "'"${{ inputs.textcard_description }}"'",
-              "url" : "'"${{ inputs.textcard_url }}"'"
-            }
-          }'
+          if [[ ${{ inputs.msgtype }} == 'text' ]]; then
+            curl --location --request POST "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${access_token}" \
+            --header 'Content-Type: application/json' \
+            --data-raw '{
+              "touser" : "'"${{ inputs.touser }}"'",
+              "msgtype" : "'"${{ inputs.msgtype }}"'",
+              "agentid" : '"${{ inputs.agentid }}"',
+              "text" : {
+                "content" : "'"${{ inputs.text_content }}"'"
+              }
+            }'
+          elif [[ ${{ inputs.msgtype }} == 'textcard' ]]; then
+            curl --location --request POST "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${access_token}" \
+            --header 'Content-Type: application/json' \
+            --data-raw '{
+              "touser" : "'"${{ inputs.touser }}"'",
+              "msgtype" : "'"${{ inputs.msgtype }}"'",
+              "agentid" : '"${{ inputs.agentid }}"',
+              "textcard" : {
+                "title" : "'"${{ inputs.textcard_title }}"'",
+                "description" : "'"${{ inputs.textcard_description }}"'",
+                "url" : "'"${{ inputs.textcard_url }}"'"
+              }
+            }'
+          fi
+          
         fi
       shell: bash
