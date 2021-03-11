@@ -44,13 +44,20 @@ runs:
   steps: 
 
     - name: Get ACCESS_TOKEN
+      id: get_access_token
       run: |
         RTN_gettoken=`curl --location --request GET "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=${{ inputs.corpid }}&corpsecret=${{ inputs.corpsecret }}"`
+        errcode=`echo ${RTN_gettoken} | jq -r '.errcode'`
+        errmsg=`echo ${RTN_gettoken} | jq -r '.errmsg'`
         access_token=`echo ${RTN_gettoken} | jq -r '.access_token'`
-        echo "ACCESS_TOKEN=${access_token}" >> $GITHUB_ENV
+        if [[ ${errcode} == 0 ]]; then
+          echo "ACCESS_TOKEN=${access_token}" >> $GITHUB_ENV
+          echo "::set-output name=status::success"
+        fi
       shell: bash
 
     - name: Push Msg
+      if: steps.get_access_token.outputs.status == 'success'
       run: |
         if [[ ${{ inputs.msgtype }} == 'text' ]]; then
           curl --location --request POST "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${ACCESS_TOKEN}" \
