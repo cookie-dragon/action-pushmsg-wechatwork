@@ -1,0 +1,68 @@
+name: 'Push Message Action by WeChat Work'
+author: 'Cooky.Long'
+description: 'Push Message to WeChat Work'
+inputs:
+  corpid:
+    description: '企业ID'
+    required: true
+    default: ''
+  corpsecret:
+    description: '应用的凭证密钥'
+    required: true
+    default: ''
+  agentid:
+    description: '企业应用的id'
+    required: true
+    default: ''
+  touser:
+    description: '接收消息的成员: [UserID1|UserID2|UserID3]'
+    required: false
+    default: '@all'
+  msgtype:
+    description: '消息类型: [text][textcard]'
+    required: false
+    default: 'textcard'
+  text_content:
+    description: '文本消息-消息内容'
+    required: false
+    default: '默认消息内容'
+  textcard_title:
+    description: '文本卡片消息-标题'
+    required: false
+    default: '默认标题'
+  textcard_description:
+    description: '文本卡片消息-描述'
+    required: false
+    default: '默认描述'
+  textcard_url:
+    description: '文本卡片消息-点击后跳转的链接'
+    required: false
+    default: 'https://github.com/cookie-dragon'
+
+runs:
+  using: "composite"
+  steps: 
+
+    - name: Get ACCESS_TOKEN
+      run: |
+        RTN_gettoken=`curl --location --request GET "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=${{ inputs.corpid }}&corpsecret=${{ inputs.corpsecret }}"`
+        access_token=`echo ${RTN_gettoken} | jq -r '.access_token'`
+        echo "ACCESS_TOKEN=${access_token}" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Push Msg with textcard
+      if: github.event.inputs.msgtype == 'textcard'
+      run: |
+        curl --location --request POST "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${ACCESS_TOKEN}" \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+          "touser" : "'"${{ inputs.touser }}"'",
+          "msgtype" : "'"${{ inputs.msgtype }}"'",
+          "agentid" : '"${{ inputs.agentid }}"',
+          "textcard" : {
+            "title" : "'"${{ inputs.textcard_title }}"'",
+            "description" : "'"${{ inputs.textcard_description }}"'",
+            "url" : "'"${{ inputs.textcard_url }}"'"
+          }
+        }'
+      shell: bash
