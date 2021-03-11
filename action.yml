@@ -51,14 +51,14 @@ runs:
         errmsg=`echo ${RTN_gettoken} | jq -r '.errmsg'`
         access_token=`echo ${RTN_gettoken} | jq -r '.access_token'`
         if [[ ${errcode} == 0 ]]; then
-          echo "ACCESS_TOKEN=${access_token}" >> $GITHUB_ENV
+          echo "::set-output name=access_token::${access_token}"
         fi
       shell: bash
 
     - name: Push Msg
       run: |
         if [[ ${{ inputs.msgtype }} == 'text' ]]; then
-          curl --location --request POST "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${ACCESS_TOKEN}" \
+          curl --location --request POST "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${{ steps.get_access_token.outputs.access_token }}" \
           --header 'Content-Type: application/json' \
           --data-raw '{
             "touser" : "'"${{ inputs.touser }}"'",
@@ -69,7 +69,7 @@ runs:
             }
           }'
         elif [[ ${{ inputs.msgtype }} == 'textcard' ]]; then
-          curl --location --request POST "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${ACCESS_TOKEN}" \
+          curl --location --request POST "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${{ steps.get_access_token.outputs.access_token }}" \
           --header 'Content-Type: application/json' \
           --data-raw '{
             "touser" : "'"${{ inputs.touser }}"'",
