@@ -1,6 +1,6 @@
-name: 'Push Message Action by WeChat Work'
+name: '消息推送 Action by 企业微信'
 author: 'Cooky.Long'
-description: 'Push Message to WeChat Work'
+description: '企业微信-发送应用消息'
 inputs:
   corpid:
     description: '企业ID'
