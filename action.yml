@@ -21,7 +21,7 @@ inputs:
   msgtype:
     description: '消息类型: [text][textcard]'
     required: false
-    default: 'textcard'
+    default: 'text'
   text_content:
     description: '文本消息-消息内容'
     required: false
@@ -50,9 +50,20 @@ runs:
         echo "ACCESS_TOKEN=${access_token}" >> $GITHUB_ENV
       shell: bash
 
-    - name: Push Msg with textcard
+    - name: Push Msg
       run: |
-        if [[ ${{ inputs.msgtype }} == 'textcard' ]]; then
+        if [[ ${{ inputs.msgtype }} == 'text' ]]; then
+          curl --location --request POST "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${ACCESS_TOKEN}" \
+          --header 'Content-Type: application/json' \
+          --data-raw '{
+            "touser" : "'"${{ inputs.touser }}"'",
+            "msgtype" : "'"${{ inputs.msgtype }}"'",
+            "agentid" : '"${{ inputs.agentid }}"',
+            "text" : {
+              "content" : "'"${{ inputs.text_content }}"'"
+            }
+          }'
+        elif [[ ${{ inputs.msgtype }} == 'textcard' ]]; then
           curl --location --request POST "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${ACCESS_TOKEN}" \
           --header 'Content-Type: application/json' \
           --data-raw '{
