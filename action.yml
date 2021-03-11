@@ -55,32 +55,31 @@ runs:
       shell: bash
 
     - name: Push Msg
+      if: contains(steps.get_access_token.outputs, 'access_token')
       run: |
-        if [[ contains(steps.get_access_token.outputs, 'access_token') ]]; then
-          if [[ ${{ inputs.msgtype }} == 'text' ]]; then
-            curl --location --request POST "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${{ steps.get_access_token.outputs.access_token }}" \
-            --header 'Content-Type: application/json' \
-            --data-raw '{
-              "touser" : "'"${{ inputs.touser }}"'",
-              "msgtype" : "'"${{ inputs.msgtype }}"'",
-              "agentid" : '"${{ inputs.agentid }}"',
-              "text" : {
-                "content" : "'"${{ inputs.text_content }}"'"
-              }
-            }'
-          elif [[ ${{ inputs.msgtype }} == 'textcard' ]]; then
-            curl --location --request POST "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${{ steps.get_access_token.outputs.access_token }}" \
-            --header 'Content-Type: application/json' \
-            --data-raw '{
-              "touser" : "'"${{ inputs.touser }}"'",
-              "msgtype" : "'"${{ inputs.msgtype }}"'",
-              "agentid" : '"${{ inputs.agentid }}"',
-              "textcard" : {
-                "title" : "'"${{ inputs.textcard_title }}"'",
-                "description" : "'"${{ inputs.textcard_description }}"'",
-                "url" : "'"${{ inputs.textcard_url }}"'"
-              }
-            }'
-          fi
+        if [[ ${{ inputs.msgtype }} == 'text' ]]; then
+          curl --location --request POST "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${{ steps.get_access_token.outputs.access_token }}" \
+          --header 'Content-Type: application/json' \
+          --data-raw '{
+            "touser" : "'"${{ inputs.touser }}"'",
+            "msgtype" : "'"${{ inputs.msgtype }}"'",
+            "agentid" : '"${{ inputs.agentid }}"',
+            "text" : {
+              "content" : "'"${{ inputs.text_content }}"'"
+            }
+          }'
+        elif [[ ${{ inputs.msgtype }} == 'textcard' ]]; then
+          curl --location --request POST "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${{ steps.get_access_token.outputs.access_token }}" \
+          --header 'Content-Type: application/json' \
+          --data-raw '{
+            "touser" : "'"${{ inputs.touser }}"'",
+            "msgtype" : "'"${{ inputs.msgtype }}"'",
+            "agentid" : '"${{ inputs.agentid }}"',
+            "textcard" : {
+              "title" : "'"${{ inputs.textcard_title }}"'",
+              "description" : "'"${{ inputs.textcard_description }}"'",
+              "url" : "'"${{ inputs.textcard_url }}"'"
+            }
+          }'
         fi
       shell: bash
